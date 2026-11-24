@@ -379,3 +379,20 @@
 @media (min-width: 641px) {
   .sheet { margin: auto; border-radius: 20px; }
 }
+
+/* ───────── Отзыв ───────── */
+.stars { display: flex; gap: 6px; margin: 8px 0 4px; }
+.star {
+  width: 52px;
+  height: 52px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: #a8a29e;
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
+}
+.star[data-on] { color: #d97706; border-color: #d97706; }
+.star:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+a.primary { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; text-align: center; }

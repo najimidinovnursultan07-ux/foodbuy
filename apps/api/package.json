@@ -19,6 +19,7 @@
     "@qrmenu/db": "workspace:*",
     "@qrmenu/shared": "workspace:*",
     "@socket.io/redis-adapter": "8.3.0",
+    "bullmq": "5.81.6",
     "ioredis": "5.7.0",
     "pdfkit": "0.17.2",
     "qrcode": "1.5.4",

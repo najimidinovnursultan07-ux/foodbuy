@@ -39,6 +39,8 @@ model Restaurant {
   /// Ссылка на карточку ресторана в 2GIS (для отзывов 4–5★)
   twoGisUrl            String?
   telegramChatId       String?
+  /// Час вечернего отчёта в Telegram (0–23, Бишкек)
+  reportHour           Int              @default(23)
   /// Алерт владельцу, если заказ ждёт дольше (мин.)
   orderAlertMinutes    Int              @default(20)
   /// Лимит заказов с одного устройства в час
@@ -97,6 +99,16 @@ model Subscription {
   plan       Plan       @relation(fields: [planId], references: [id])
 
   @@index([restaurantId, periodEnd])
+}
+
+/// Сотрудник платформы (супер-админ): рестораны, подписки, блокировка
+model PlatformAdmin {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String   @unique
+  pinHash   String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
 }
 
 // ───────── Ресторан ─────────

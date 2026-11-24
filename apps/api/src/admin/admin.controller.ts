@@ -26,6 +26,10 @@ import { AdminTablesService } from './admin-tables.service';
 import { AdminStaffService } from './admin-staff.service';
 import { AdminSettingsService } from './admin-settings.service';
 import { AdminReportsService } from './admin-reports.service';
+import { TelegramClient } from '../notifications/telegram.client';
+import { TelegramBotService } from '../notifications/telegram-bot.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { PrismaService } from '../prisma/prisma.module';
 import {
   dateRange,
   dishSchema,
@@ -55,6 +59,10 @@ export class AdminController {
     private readonly staff: AdminStaffService,
     private readonly settings: AdminSettingsService,
     private readonly reports: AdminReportsService,
+    private readonly telegram: TelegramClient,
+    private readonly bot: TelegramBotService,
+    private readonly notifications: NotificationsService,
+    private readonly prisma: PrismaService,
   ) {}
 
   // ───────── Меню ─────────
@@ -199,6 +207,33 @@ export class AdminController {
   @Delete('settings/logo')
   deleteLogo(@CurrentStaff() me: AuthedStaff) {
     return this.settings.deleteLogo(me.restaurantId);
+  }
+
+  // ───────── Telegram владельца ─────────
+
+  @Get('telegram')
+  async telegramStatus(@CurrentStaff() me: AuthedStaff) {
+    const r = await this.prisma.restaurant.findUniqueOrThrow({ where: { id: me.restaurantId } });
+    return { available: this.telegram.enabled, connected: Boolean(r.telegramChatId), reportHour: r.reportHour };
+  }
+
+  @Post('telegram/link')
+  telegramLink(@CurrentStaff() me: AuthedStaff) {
+    if (!this.telegram.enabled) throw staffError(409, 'INVALID_STATE');
+    return this.bot.createLink(me.restaurantId);
+  }
+
+  @Post('telegram/test')
+  async telegramTest(@CurrentStaff() me: AuthedStaff) {
+    const sent = await this.notifications.notifyOwner(me.restaurantId, (m, r) => m.test(r.name));
+    if (!sent) throw staffError(409, 'INVALID_STATE');
+    return { ok: true };
+  }
+
+  @Delete('telegram')
+  async telegramUnlink(@CurrentStaff() me: AuthedStaff) {
+    await this.prisma.restaurant.update({ where: { id: me.restaurantId }, data: { telegramChatId: null } });
+    return { ok: true };
   }
 
   // ───────── Отчёты ─────────

@@ -69,6 +69,17 @@ const ru = {
   errGeneric: 'Не удалось отправить. Проверьте интернет и попробуйте ещё раз.',
   errModifiers: 'Выбор вариантов изменился. Удалите позицию и добавьте заново.',
   errNoBill: 'Сначала сделайте заказ.',
+  reviewTitle: 'Спасибо, что были у нас!',
+  reviewAsk: 'Как вам всё понравилось?',
+  stars: (n: number) => `${n} из 5`,
+  reviewCommentBad: 'Что можно улучшить? (необязательно)',
+  reviewCommentGood: 'Комментарий (необязательно)',
+  sendReview: 'Отправить',
+  skip: 'Не сейчас',
+  thanksGood: 'Спасибо! Будем рады, если поделитесь впечатлением в 2GIS — это нам очень помогает.',
+  open2gis: 'Оставить отзыв в 2GIS',
+  thanksBad: 'Спасибо за честный отзыв. Мы передали его владельцу и обязательно разберёмся.',
+  thanksPlain: 'Спасибо за отзыв!',
 };
 
 export type Messages = typeof ru;
@@ -141,6 +152,17 @@ const ky: Messages = {
   errGeneric: 'Жөнөтүлгөн жок. Интернетти текшерип, кайра аракет кылыңыз.',
   errModifiers: 'Варианттар өзгөрдү. Позицияны өчүрүп, кайра кошуңуз.',
   errNoBill: 'Адегенде заказ бериңиз.',
+  reviewTitle: 'Келгениңиз үчүн рахмат!',
+  reviewAsk: 'Сизге баары жактыбы?',
+  stars: (n) => `5тен ${n}`,
+  reviewCommentBad: 'Эмнени жакшыртса болот? (милдеттүү эмес)',
+  reviewCommentGood: 'Комментарий (милдеттүү эмес)',
+  sendReview: 'Жөнөтүү',
+  skip: 'Азыр эмес',
+  thanksGood: 'Рахмат! Пикириңизди 2GIS’те бөлүшсөңүз, кубанабыз — бул бизге абдан жардам берет.',
+  open2gis: '2GIS’те пикир калтыруу',
+  thanksBad: 'Ачык пикириңиз үчүн рахмат. Биз аны ээсине бердик жана сөзсүз карап чыгабыз.',
+  thanksPlain: 'Пикириңиз үчүн рахмат!',
 };
 
 const en: Messages = {
@@ -211,6 +233,17 @@ const en: Messages = {
   errGeneric: 'Could not send. Check your connection and try again.',
   errModifiers: 'Options have changed. Remove the item and add it again.',
   errNoBill: 'Please place an order first.',
+  reviewTitle: 'Thank you for visiting!',
+  reviewAsk: 'How was everything?',
+  stars: (n) => `${n} of 5`,
+  reviewCommentBad: 'What could we improve? (optional)',
+  reviewCommentGood: 'Comment (optional)',
+  sendReview: 'Send',
+  skip: 'Not now',
+  thanksGood: 'Thank you! We would love it if you shared your impressions on 2GIS — it really helps us.',
+  open2gis: 'Leave a review on 2GIS',
+  thanksBad: 'Thank you for your honest feedback. We have passed it to the owner and will look into it.',
+  thanksPlain: 'Thanks for your review!',
 };
 
 const MESSAGES: Record<Locale, Messages> = { ru, ky, en };

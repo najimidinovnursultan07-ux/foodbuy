@@ -83,6 +83,37 @@ export function ReportsAdmin() {
             </dl>
           </div>
 
+          <div className={s.card} data-testid="reviews">
+            <h2>{t.reviewsTitle}</h2>
+            {report.reviews.count === 0 ? (
+              <p className={s.muted}>{t.noReviews}</p>
+            ) : (
+              <>
+                <dl className={s.tiles}>
+                  <Tile label={t.avgRating} value={`${String(report.reviews.avgRating).replace('.', ',')} ★`} />
+                  <Tile label={t.reviewsCount} value={String(report.reviews.count)} />
+                  <Tile label={t.lowReviews} value={String(report.reviews.lowCount)} />
+                </dl>
+                <ul className={s.rows}>
+                  {report.reviews.recent.map((rv, i) => (
+                    <li key={i} className={s.row} data-low={rv.rating <= 3 || undefined}>
+                      <span className={s.ratingStars} aria-label={`${rv.rating}/5`}>
+                        {'★'.repeat(rv.rating)}
+                        <span className={s.muted}>{'☆'.repeat(5 - rv.rating)}</span>
+                      </span>
+                      <div className={s.rowMain}>
+                        <span>{rv.comment ?? '—'}</span>
+                        <span className={s.muted}>
+                          {t.table} {rv.tableLabel} · {new Date(rv.createdAt).toLocaleString(locale === 'en' ? 'en-GB' : 'ru-RU', { timeZone: 'Asia/Bishkek', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+
           {report.billsCount === 0 ? (
             <p className={`${s.card} ${s.muted}`}>{t.noData}</p>
           ) : (

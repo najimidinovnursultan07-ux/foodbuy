@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { aggregateOrderStatus, ticketStatus } from '../staff';
-import { pinFingerprint, signSession, verifySession } from '../session';
+import { pinFingerprint, signPlatformSession, signSession, verifyPlatformSession, verifySession } from '../session';
 
 const st = (...s: string[]) => s.map((status) => ({ status })) as { status: never }[];
 
@@ -37,6 +37,14 @@ describe('сессия персонала', () => {
     expect(verifySession(`${payload}.${sig}`, 'other')).toBeNull();
     expect(verifySession(signSession(base, secret, -10), secret)).toBeNull();
     expect(verifySession('garbage', secret)).toBeNull();
+  });
+
+  it('токен персонала нельзя выдать за токен платформы и наоборот', () => {
+    const staff = signSession(base, secret);
+    const platform = signPlatformSession({ sid: 'p1', pv: 'x' }, secret);
+    expect(verifyPlatformSession(staff, secret)).toBeNull();
+    expect(verifySession(platform, secret)).toBeNull();
+    expect(verifyPlatformSession(platform, secret)).toMatchObject({ sid: 'p1' });
   });
 
   it('отпечаток PIN меняется вместе с хешем', () => {

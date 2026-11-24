@@ -95,6 +95,7 @@ export const settingsSchema = z.object({
   orderFlow: z.enum(['DIRECT_TO_KITCHEN', 'WAITER_CONFIRM']),
   orderAlertMinutes: z.number().int().min(3).max(180),
   twoGisUrl: twoGis.nullable(),
+  reportHour: z.number().int().min(0).max(23),
   openingHours: hoursSchema,
 });
 

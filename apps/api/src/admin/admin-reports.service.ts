@@ -26,6 +26,18 @@ export class AdminReportsService {
     // Счета с нулевой суммой (всё отменено) в отчёт не попадают
     const where = { restaurantId, status: 'CLOSED' as const, closedAt: { gte: start, lt: end }, totalTyiyn: { gt: 0 } };
 
+    const reviewWhere = { restaurantId, createdAt: { gte: start, lt: end } };
+    const [reviewAgg, lowCount, recentReviews] = await Promise.all([
+      this.prisma.review.aggregate({ where: reviewWhere, _count: true, _avg: { rating: true } }),
+      this.prisma.review.count({ where: { ...reviewWhere, rating: { lte: 3 } } }),
+      this.prisma.review.findMany({
+        where: reviewWhere,
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+        include: { bill: { select: { table: { select: { label: true } } } } },
+      }),
+    ]);
+
     const [totals, byPayment, ordersCount, byDayRows, topRows] = await Promise.all([
       this.prisma.tableBill.aggregate({ where, _sum: { totalTyiyn: true, serviceFeeTyiyn: true }, _count: true }),
       this.prisma.tableBill.groupBy({ by: ['paidWith'], where, _sum: { totalTyiyn: true } }),
@@ -75,6 +87,17 @@ export class AdminReportsService {
       cardTyiyn: sumBy('CARD'),
       byDay,
       topDishes: topRows.map((r) => ({ name: r.name, quantity: r.quantity, revenueTyiyn: r.revenue })),
+      reviews: {
+        count: reviewAgg._count,
+        avgRating: reviewAgg._avg.rating === null ? null : Math.round(reviewAgg._avg.rating * 10) / 10,
+        lowCount,
+        recent: recentReviews.map((rv) => ({
+          rating: rv.rating,
+          comment: rv.comment,
+          createdAt: rv.createdAt.toISOString(),
+          tableLabel: rv.bill.table.label,
+        })),
+      },
     };
   }
 }

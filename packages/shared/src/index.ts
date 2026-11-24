@@ -7,4 +7,6 @@ export * from './order';
 export * from './staff';
 export * from './hours';
 export * from './admin';
+export * from './review';
+export * from './platform';
 export type { StaffRoleDto, StaffSession } from './session';

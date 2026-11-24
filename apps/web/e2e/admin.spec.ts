@@ -133,6 +133,8 @@ test('менеджер: меню → фото → стоп-лист → гост
   await page.getByRole('button', { name: 'Сохранить' }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Сохранено' })).toBeVisible();
   expect((await prisma.restaurant.findUniqueOrThrow({ where: { slug: 'ala-too-demo' } })).accentColor).toBe('#0F766E');
+  // В тестовом окружении токена бота нет — панель честно об этом говорит
+  await expect(page.getByTestId('telegram')).toContainText('Бот на платформе ещё не настроен');
 
   // Отчёты открываются, пресеты переключают период
   await page.getByRole('link', { name: 'Отчёты' }).click();

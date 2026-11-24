@@ -28,6 +28,7 @@ export class AdminSettingsService {
       orderFlow: r.orderFlow,
       orderAlertMinutes: r.orderAlertMinutes,
       twoGisUrl: r.twoGisUrl,
+      reportHour: r.reportHour,
       openingHours: (r.venues[0]?.openingHours ?? {}) as OpeningHours,
     };
   }

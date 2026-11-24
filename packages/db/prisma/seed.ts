@@ -7,6 +7,7 @@
  *   официант  +996700000002 / 1111
  *   кухня     +996700000003 / 2222
  *   бар       +996700000004 / 3333
+ *   платформа +996700000099 / 999999 (супер-админка /platform)
  */
 import { PrismaClient, Station, WeightUnit } from '@prisma/client';
 import { createTableToken, hashPin } from '@qrmenu/shared/server';
@@ -371,6 +372,14 @@ async function main() {
   });
 
   console.log(`Сиды готовы: ресторан «${restaurant.name}» (${DEMO_SLUG}), блюд: ${dishIds.size}, столов: 10`);
+
+  // Сотрудник платформы для супер-админки (/platform). Только для разработки — в проде создать своего.
+  await prisma.platformAdmin.upsert({
+    where: { phone: '+996700000099' },
+    update: {},
+    create: { name: 'Админ платформы', phone: '+996700000099', pinHash: hashPin('999999') },
+  });
+  console.log('Супер-админка: /platform, +996700000099 / 999999');
 
   const secret = process.env.QR_SIGNING_SECRET ?? 'dev-qr-secret-change-me';
   const origin = process.env.WEB_ORIGIN?.split(',')[0] ?? 'http://localhost:3000';

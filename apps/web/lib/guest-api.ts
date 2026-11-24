@@ -6,6 +6,9 @@ import type {
   CreateOrderResponse,
   GuestBillDto,
   GuestErrorBody,
+  ReviewRequest,
+  ReviewResponse,
+  ReviewStatusDto,
 } from '@qrmenu/shared';
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
@@ -38,6 +41,10 @@ export const guestApi = {
   getBill: (slug: string, token: string) => call<GuestBillDto>(`/public/bill/${seg(slug, token)}`),
   createOrder: (slug: string, token: string, body: CreateOrderRequest) =>
     call<CreateOrderResponse>(`/public/orders/${seg(slug, token)}`, { method: 'POST', body: JSON.stringify(body) }),
+  reviewStatus: (slug: string, token: string, billId: string) =>
+    call<ReviewStatusDto>(`/public/reviews/${seg(slug, token)}/${encodeURIComponent(billId)}`),
+  createReview: (slug: string, token: string, body: ReviewRequest) =>
+    call<ReviewResponse>(`/public/reviews/${seg(slug, token)}`, { method: 'POST', body: JSON.stringify(body) }),
   createCall: (slug: string, token: string, body: CreateCallRequest) =>
     call<{ callId: string }>(`/public/calls/${seg(slug, token)}`, { method: 'POST', body: JSON.stringify(body) }),
 };

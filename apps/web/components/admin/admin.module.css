@@ -246,3 +246,11 @@
 .table th { color: var(--muted); font-weight: 600; font-size: 13px; }
 .num { text-align: right !important; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .visuallyHidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Telegram и отзывы */
+.tgLink { margin-top: 10px; padding: 12px; border-radius: 10px; background: var(--bg); }
+.code { display: block; margin-top: 8px; font-size: 13px; overflow-wrap: anywhere; color: var(--muted); }
+.ratingStars { color: #b45309; font-size: 18px; letter-spacing: 1px; white-space: nowrap; flex: none; }
+.row[data-low] .rowMain > span:first-child { font-weight: 600; }
+.badgeWarn { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; background: #fee2e2; color: #991b1b; }
+.card.rows { padding: 4px 16px; }

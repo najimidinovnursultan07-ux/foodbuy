@@ -51,7 +51,8 @@ export type GuestErrorCode =
   | 'INVALID_MODIFIERS'
   | 'INVALID_REQUEST'
   | 'RATE_LIMITED'
-  | 'NO_OPEN_BILL';
+  | 'NO_OPEN_BILL'
+  | 'REVIEW_NOT_ALLOWED';
 
 export interface GuestErrorBody {
   statusCode: number;

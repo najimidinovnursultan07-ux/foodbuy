@@ -17,7 +17,9 @@ export type StaffErrorCode =
   | 'INVALID_PHONE'
   | 'SELF_LOCKOUT'
   | 'INVALID_IMAGE'
-  | 'INVALID_MODIFIERS';
+  | 'INVALID_MODIFIERS'
+  // Платформа
+  | 'SLUG_TAKEN';
 
 /** Ошибка API персонала: стабильный код, текст переводит клиент. */
 export function staffError(status: number, code: StaffErrorCode, extra: Record<string, unknown> = {}): HttpException {

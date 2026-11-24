@@ -127,6 +127,8 @@ export interface SettingsDto {
   orderAlertMinutes: number;
   twoGisUrl: string | null;
   openingHours: OpeningHours;
+  /** Час вечернего отчёта в Telegram (0–23, Бишкек) */
+  reportHour: number;
 }
 
 export type SettingsInput = Omit<SettingsDto, 'slug' | 'logoUrl'>;
@@ -145,6 +147,23 @@ export interface ReportDto {
   cardTyiyn: number;
   byDay: { date: string; revenueTyiyn: number; billsCount: number }[];
   topDishes: { name: LocalizedText; quantity: number; revenueTyiyn: number }[];
+  reviews: {
+    count: number;
+    /** Средняя оценка с точностью до десятых; null — отзывов нет */
+    avgRating: number | null;
+    /** Оценок 1–3★ */
+    lowCount: number;
+    recent: { rating: number; comment: string | null; createdAt: string; tableLabel: string }[];
+  };
+}
+
+// ───────── Telegram ─────────
+
+export interface TelegramStatusDto {
+  /** Бот настроен на платформе (есть токен) */
+  available: boolean;
+  connected: boolean;
+  reportHour: number;
 }
 
 export const MAX_REPORT_DAYS = 366;

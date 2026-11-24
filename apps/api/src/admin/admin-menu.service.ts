@@ -6,6 +6,7 @@ import { PrismaService } from '../prisma/prisma.module';
 import { StorageService } from '../storage/storage.service';
 import { processDishPhoto } from '../storage/images';
 import { staffError } from '../common/api-error';
+import { NotificationsService } from '../notifications/notifications.service';
 
 const json = (v: unknown) => v as Prisma.InputJsonValue;
 
@@ -15,6 +16,7 @@ export class AdminMenuService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async getMenu(restaurantId: string): Promise<AdminMenuDto> {
@@ -120,8 +122,12 @@ export class AdminMenuService {
 
   async updateDish(restaurantId: string, id: string, input: Partial<DishInput>) {
     if (input.categoryId) await this.assertOwned('category', restaurantId, [input.categoryId]);
-    const { count } = await this.prisma.dish.updateMany({ where: { id, restaurantId }, data: this.dishData(input) });
-    if (!count) throw staffError(404, 'NOT_FOUND');
+    const before = await this.prisma.dish.findFirst({ where: { id, restaurantId }, select: { isAvailable: true, name: true } });
+    if (!before) throw staffError(404, 'NOT_FOUND');
+    await this.prisma.dish.update({ where: { id }, data: this.dishData(input) });
+    if (input.isAvailable !== undefined && input.isAvailable !== before.isAvailable) {
+      await this.notifications.notifyStopList(restaurantId, [(before.name as LocalizedText).ru], input.isAvailable);
+    }
     return { id };
   }
 
@@ -216,8 +222,16 @@ export class AdminMenuService {
   }
 
   async setModifierAvailability(restaurantId: string, id: string, isAvailable: boolean) {
-    const { count } = await this.prisma.modifier.updateMany({ where: { id, restaurantId }, data: { isAvailable } });
-    if (!count) throw staffError(404, 'NOT_FOUND');
+    const mod = await this.prisma.modifier.findFirst({
+      where: { id, restaurantId },
+      include: { group: { select: { dish: { select: { name: true } } } } },
+    });
+    if (!mod) throw staffError(404, 'NOT_FOUND');
+    await this.prisma.modifier.update({ where: { id }, data: { isAvailable } });
+    if (mod.isAvailable !== isAvailable) {
+      const label = `${(mod.group.dish.name as LocalizedText).ru}: ${(mod.name as LocalizedText).ru}`;
+      await this.notifications.notifyStopList(restaurantId, [label], isAvailable);
+    }
     return { id };
   }
 

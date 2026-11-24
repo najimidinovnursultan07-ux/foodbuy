@@ -18,6 +18,7 @@ import { GuestApiError, guestApi } from '@/lib/guest-api';
 import { DishSheet } from './DishSheet';
 import { CartView } from './CartView';
 import { BillView } from './BillView';
+import { ReviewSheet } from './ReviewSheet';
 import { DishTags, Thumb, weightLabel } from './parts';
 import s from './guest.module.css';
 
@@ -35,7 +36,25 @@ export function GuestMenu({ menu, token, initialLocale }: { menu: PublicMenuDto;
   const canCall = menu.restaurant.status === 'ACTIVE';
   const canOrder = canCall && menu.restaurant.isOpen;
   const cart = useCart(slug, menu.table.id);
-  const { bill, refresh } = useTableBill(slug, token);
+  const { bill, refresh, closedBillId, forgetClosedBill } = useTableBill(slug, token);
+  const [reviewBillId, setReviewBillId] = useState<string | null>(null);
+
+  // Счёт закрыли — спросим отзыв, если сервер разрешает (недавний, этого стола, без отзыва)
+  useEffect(() => {
+    if (!closedBillId) return;
+    let alive = true;
+    guestApi
+      .reviewStatus(slug, token, closedBillId)
+      .then((r) => {
+        if (!alive) return;
+        if (r.canReview) setReviewBillId(closedBillId);
+        else forgetClosedBill();
+      })
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, [closedBillId, slug, token, forgetClosedBill]);
 
   // Экран (меню / корзина / счёт) — в ?view=, через history API: без запроса к серверу, «назад» работает
   const view = toView(useSearchParams().get('view'));
@@ -171,6 +190,19 @@ export function GuestMenu({ menu, token, initialLocale }: { menu: PublicMenuDto;
       <div className={s.toast} role="status" aria-live="polite">
         {toast}
       </div>
+
+      {reviewBillId && !openDish && (
+        <ReviewSheet
+          slug={slug}
+          token={token}
+          billId={reviewBillId}
+          locale={locale}
+          onDone={() => {
+            setReviewBillId(null);
+            forgetClosedBill();
+          }}
+        />
+      )}
 
       {openDish && (
         <DishSheet

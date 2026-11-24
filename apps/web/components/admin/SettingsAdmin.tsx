@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { textOnAccent, WEEKDAYS, type OpeningHours, type SettingsDto, type SettingsInput, type Weekday } from '@qrmenu/shared';
 import { useAdmin, useAdminData } from '@/lib/admin-api';
 import { ErrorNote } from './fields';
+import { TelegramCard } from './TelegramCard';
 import s from './admin.module.css';
 
 type DayDraft = { open: boolean; from: string; to: string };
@@ -158,6 +159,19 @@ export function SettingsAdmin() {
           <input type="url" placeholder="https://2gis.kg/bishkek/firm/…" value={form.twoGis} onChange={(e) => set({ twoGis: e.target.value })} />
           <span className={s.muted}>{t.twoGisHint}</span>
         </label>
+
+        <label className={s.field}>
+          {t.reportHour}
+          <select value={form.reportHour} onChange={(e) => set({ reportHour: Number(e.target.value) })}>
+            {Array.from({ length: 24 }, (_, h) => (
+              <option key={h} value={h}>
+                {String(h).padStart(2, '0')}:00
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <TelegramCard />
 
         <fieldset className={s.fieldset}>
           <legend>{t.hours}</legend>

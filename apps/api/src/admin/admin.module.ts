@@ -5,10 +5,9 @@ import { AdminMenuService } from './admin-menu.service';
 import { AdminTablesService } from './admin-tables.service';
 import { AdminStaffService } from './admin-staff.service';
 import { AdminSettingsService } from './admin-settings.service';
-import { AdminReportsService } from './admin-reports.service';
 
 @Module({
   controllers: [AdminController],
-  providers: [StorageService, AdminMenuService, AdminTablesService, AdminStaffService, AdminSettingsService, AdminReportsService],
+  providers: [StorageService, AdminMenuService, AdminTablesService, AdminStaffService, AdminSettingsService],
 })
 export class AdminModule {}

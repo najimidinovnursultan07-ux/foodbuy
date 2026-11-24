@@ -6,10 +6,12 @@ import {
   type CreateOrderRequest,
   type CreateOrderResponse,
   type GuestBillDto,
+  type ReviewRequest,
 } from '@qrmenu/shared';
 import { guestError } from '../common/guest-error';
 import { GuestOrdersService } from './guest-orders.service';
 import { GuestBillService } from './guest-bill.service';
+import { GuestReviewService } from './guest-review.service';
 
 const id = z.string().min(1).max(64);
 
@@ -29,6 +31,12 @@ const createOrderSchema = z.object({
     .max(ORDER_LIMITS.maxLines),
 });
 
+const reviewSchema = z.object({
+  billId: id,
+  rating: z.number().int().min(1).max(5),
+  comment: z.string().max(500).optional(),
+});
+
 const createCallSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('CALL_WAITER') }),
   z.object({ type: z.literal('BRING_BILL'), paymentMethod: z.enum(['CASH', 'CARD']) }),
@@ -46,6 +54,7 @@ export class GuestController {
   constructor(
     private readonly orders: GuestOrdersService,
     private readonly bills: GuestBillService,
+    private readonly reviews: GuestReviewService,
   ) {}
 
   @Post('orders/:slug/:token')
@@ -64,5 +73,17 @@ export class GuestController {
   @HttpCode(201)
   createCall(@Param('slug') slug: string, @Param('token') token: string, @Body() body: unknown) {
     return this.bills.createCall(slug, token, parse<CreateCallRequest>(createCallSchema, body));
+  }
+
+  @Get('reviews/:slug/:token/:billId')
+  @Header('Cache-Control', 'no-store')
+  reviewStatus(@Param('slug') slug: string, @Param('token') token: string, @Param('billId') billId: string) {
+    return this.reviews.status(slug, token, billId);
+  }
+
+  @Post('reviews/:slug/:token')
+  @HttpCode(201)
+  createReview(@Param('slug') slug: string, @Param('token') token: string, @Body() body: unknown) {
+    return this.reviews.create(slug, token, parse<ReviewRequest>(reviewSchema, body));
   }
 }
