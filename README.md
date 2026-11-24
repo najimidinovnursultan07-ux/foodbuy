@@ -18,8 +18,11 @@ pnpm install
 pnpm --filter @qrmenu/shared build
 pnpm db:deploy && pnpm db:seed
 pnpm dev                      # api :4000, web :3000
-pnpm test
+pnpm test                     # unit + интеграционные (Vitest)
+pnpm build && pnpm --filter @qrmenu/web test:e2e   # путь гостя (Playwright)
 ```
+
+`pnpm db:seed` печатает ссылки столов вида `http://localhost:3000/m/ala-too-demo/<токен>` — это то, что будет в QR.
 Всё целиком в Docker: `docker compose --profile app up --build`.
 
 ## Демо-доступы (сиды)

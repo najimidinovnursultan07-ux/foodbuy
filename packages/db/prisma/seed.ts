@@ -9,7 +9,7 @@
  *   бар       +996700000004 / 3333
  */
 import { PrismaClient, Station, WeightUnit } from '@prisma/client';
-import { hashPin } from '@qrmenu/shared/server';
+import { createTableToken, hashPin } from '@qrmenu/shared/server';
 import { somToTyiyn, type LocalizedText } from '@qrmenu/shared';
 
 const prisma = new PrismaClient();
@@ -371,6 +371,14 @@ async function main() {
   });
 
   console.log(`Сиды готовы: ресторан «${restaurant.name}» (${DEMO_SLUG}), блюд: ${dishIds.size}, столов: 10`);
+
+  const secret = process.env.QR_SIGNING_SECRET ?? 'dev-qr-secret-change-me';
+  const origin = process.env.WEB_ORIGIN?.split(',')[0] ?? 'http://localhost:3000';
+  const tables = await prisma.table.findMany({ where: { restaurantId: rid }, orderBy: { sortOrder: 'asc' }, take: 3 });
+  console.log('Ссылки столов (первые 3):');
+  for (const tb of tables) {
+    console.log(`  стол ${tb.label}: ${origin}/m/${DEMO_SLUG}/${createTableToken(tb.id, tb.tokenVersion, secret)}`);
+  }
 }
 
 main()

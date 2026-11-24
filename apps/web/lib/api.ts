@@ -1,0 +1,27 @@
+import { cache } from 'react';
+import type { PublicMenuDto } from '@qrmenu/shared';
+
+/** Адрес API для серверного рендера (внутри Docker — имя сервиса). */
+const SERVER_API = process.env.API_INTERNAL_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+
+export type MenuResult =
+  | { kind: 'ok'; menu: PublicMenuDto }
+  | { kind: 'not_found' }
+  | { kind: 'disabled' }
+  | { kind: 'error' };
+
+/** Один запрос к API на рендер: метаданные и страница берут результат из React cache. */
+export const fetchMenu = cache(async function fetchMenu(slug: string, token: string): Promise<MenuResult> {
+  try {
+    const res = await fetch(`${SERVER_API}/public/menu/${encodeURIComponent(slug)}/${encodeURIComponent(token)}`, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(5000),
+    });
+    if (res.status === 404) return { kind: 'not_found' };
+    if (res.status === 403) return { kind: 'disabled' };
+    if (!res.ok) return { kind: 'error' };
+    return { kind: 'ok', menu: (await res.json()) as PublicMenuDto };
+  } catch {
+    return { kind: 'error' };
+  }
+});

@@ -2,9 +2,10 @@ import { Module } from '@nestjs/common';
 import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './redis/redis.module';
 import { HealthController } from './health/health.controller';
+import { PublicMenuModule } from './public-menu/public-menu.module';
 
 @Module({
-  imports: [PrismaModule, RedisModule],
+  imports: [PrismaModule, RedisModule, PublicMenuModule],
   controllers: [HealthController],
 })
 export class AppModule {}
