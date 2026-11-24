@@ -1,5 +1,6 @@
 const DEV_DEFAULTS: Record<string, string> = {
   QR_SIGNING_SECRET: 'dev-qr-secret-change-me',
+  JWT_SECRET: 'dev-jwt-secret-change-me',
 };
 
 /** Обязательная переменная окружения; в dev — с безопасным для локали дефолтом. */

@@ -1,0 +1,10 @@
+{
+  "name": "QR-меню · персонал",
+  "short_name": "Персонал",
+  "start_url": "/staff",
+  "scope": "/staff",
+  "display": "standalone",
+  "background_color": "#1c1917",
+  "theme_color": "#1c1917",
+  "icons": []
+}

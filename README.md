@@ -25,6 +25,11 @@ pnpm build && pnpm --filter @qrmenu/web test:e2e   # путь гостя (Playwr
 `pnpm db:seed` печатает ссылки столов вида `http://localhost:3000/m/ala-too-demo/<токен>` — это то, что будет в QR.
 Всё целиком в Docker: `docker compose --profile app up --build`.
 
+## Экраны
+- Гость: `/m/<slug>/<токен стола>` (ссылку печатает `pnpm db:seed`)
+- Персонал: `/staff` — вход по телефону и PIN, дальше по роли:
+  `/staff/waiter` (лента официанта, телефон), `/staff/kitchen` (экран кухни/бара, планшет)
+
 ## Демо-доступы (сиды)
 Ресторан `ala-too-demo`. Телефон / PIN:
 - менеджер +996700000001 / 1234
