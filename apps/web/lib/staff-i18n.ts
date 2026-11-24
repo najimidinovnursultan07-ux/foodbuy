@@ -32,6 +32,7 @@ const ru = {
   empty: 'Пусто',
   // Официант
   floor: 'Зал',
+  panel: 'Панель',
   calls: 'Вызовы',
   pending: 'Подтвердить заказ',
   ready: 'Готово — забрать',
@@ -87,6 +88,7 @@ const ky: StaffMessages = {
   undo: '↩ Кайтаруу',
   empty: 'Бош',
   floor: 'Зал',
+  panel: 'Панель',
   calls: 'Чакыруулар',
   pending: 'Заказды ырастоо',
   ready: 'Даяр — алып барыңыз',
@@ -140,6 +142,7 @@ const en: StaffMessages = {
   undo: '↩ Undo',
   empty: 'Empty',
   floor: 'Floor',
+  panel: 'Dashboard',
   calls: 'Calls',
   pending: 'Confirm orders',
   ready: 'Ready — pick up',

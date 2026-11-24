@@ -55,7 +55,7 @@ const LAGMAN: CreateOrderLine = { dishId: '', selection: {}, quantity: 2 };
 beforeAll(async () => {
   // Счётчики неудачных входов с прошлых прогонов живут 15 минут — сбрасываем
   const redis = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379');
-  await redis.del(...Object.values(PH).map((p) => `login:fail:${p}`));
+  await redis.del(...[...Object.values(PH), '+996999999999'].map((p) => `login:fail:${p}`));
   await redis.quit();
   await prisma.restaurant.deleteMany({ where: { slug: { in: [SLUG, OTHER] } } });
   const r = await prisma.restaurant.create({ data: { slug: SLUG, name: 'Персонал-тест', serviceFeeBp: 1000 } });

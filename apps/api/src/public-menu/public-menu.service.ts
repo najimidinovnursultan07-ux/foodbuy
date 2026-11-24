@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import type { CategoryDto, DishDto, LocalizedText, PublicMenuDto } from '@qrmenu/shared';
+import { isOpenAt, type CategoryDto, type DishDto, type LocalizedText, type OpeningHours, type PublicMenuDto } from '@qrmenu/shared';
 import { verifyTableToken } from '@qrmenu/shared/server';
+import type { Prisma, Restaurant, Table } from '@qrmenu/db';
 import { PrismaService } from '../prisma/prisma.module';
+
+export type ResolvedTable = Table & { restaurant: Restaurant; venue: { openingHours: Prisma.JsonValue } };
 import { requireEnv } from '../config/env';
 import { guestError } from '../common/guest-error';
 
@@ -12,12 +15,12 @@ export class PublicMenuService {
   constructor(private readonly prisma: PrismaService) {}
 
   /** Стол по подписанному токену из QR. Любая ошибка — 404, чтобы не подсказывать, что не так. */
-  async resolveTable(slug: string, token: string) {
+  async resolveTable(slug: string, token: string): Promise<ResolvedTable> {
     const parsed = verifyTableToken(token, this.secret);
     if (!parsed) throw guestError(404, 'TABLE_NOT_FOUND');
     const table = await this.prisma.table.findFirst({
       where: { id: parsed.tableId, isActive: true, restaurant: { slug } },
-      include: { restaurant: true },
+      include: { restaurant: true, venue: { select: { openingHours: true } } },
     });
     if (!table || table.tokenVersion !== parsed.version) throw guestError(404, 'TABLE_NOT_FOUND');
     if (table.restaurant.status === 'DISABLED') throw guestError(403, 'RESTAURANT_DISABLED');
@@ -65,6 +68,7 @@ export class PublicMenuService {
         weightValue: d.weightValue,
         weightUnit: d.weightUnit,
         photoUrl: d.photoUrl,
+        photoThumbUrl: d.photoThumbUrl,
         isHit: d.isHit,
         isSpicy: d.isSpicy,
         isHalal: d.isHalal,
@@ -101,6 +105,7 @@ export class PublicMenuService {
         accentColor: r.accentColor,
         defaultLocale: r.defaultLocale,
         status: r.status,
+        isOpen: isOpenAt(table.venue.openingHours as OpeningHours),
         orderFlow: r.orderFlow,
         serviceFeeBp: r.serviceFeeBp,
       },

@@ -38,7 +38,7 @@ export function clearSession() {
 }
 
 export function homeFor(staff: StaffProfileDto): string {
-  return staff.role === 'kitchen' ? '/staff/kitchen' : '/staff/waiter';
+  return staff.role === 'kitchen' ? '/staff/kitchen' : staff.role === 'manager' ? '/admin' : '/staff/waiter';
 }
 
 // ───────── Запросы ─────────

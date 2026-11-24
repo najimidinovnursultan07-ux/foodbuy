@@ -5,4 +5,6 @@ export * from './constants';
 export * from './menu';
 export * from './order';
 export * from './staff';
+export * from './hours';
+export * from './admin';
 export type { StaffRoleDto, StaffSession } from './session';

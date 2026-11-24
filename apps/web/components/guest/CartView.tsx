@@ -68,6 +68,7 @@ export function CartView({ menu, token, locale, cart, onOpenDish, onSubmitted }:
       } else if (body?.code === 'INVALID_MODIFIERS') setError(t.errModifiers);
       else if (body?.code === 'RATE_LIMITED') setError(t.errRateLimited);
       else if (body?.code === 'ORDERING_DISABLED') setError(t.menuOnly);
+      else if (body?.code === 'RESTAURANT_CLOSED') setError(t.closedNow);
       else setError(t.errGeneric);
     } finally {
       setSending(false);

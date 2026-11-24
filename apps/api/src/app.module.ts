@@ -6,9 +6,10 @@ import { PublicMenuModule } from './public-menu/public-menu.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { GuestModule } from './guest/guest.module';
 import { StaffAuthModule, StaffModule } from './staff/staff.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
-  imports: [PrismaModule, RedisModule, StaffAuthModule, PublicMenuModule, RealtimeModule, GuestModule, StaffModule],
+  imports: [PrismaModule, RedisModule, StaffAuthModule, PublicMenuModule, RealtimeModule, GuestModule, StaffModule, AdminModule],
   controllers: [HealthController],
 })
 export class AppModule {}

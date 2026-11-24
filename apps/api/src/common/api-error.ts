@@ -9,7 +9,15 @@ export type StaffErrorCode =
   | 'NOT_FOUND'
   | 'INVALID_STATE'
   | 'INVALID_REQUEST'
-  | 'RATE_LIMITED';
+  | 'RATE_LIMITED'
+  // Панель ресторана
+  | 'CATEGORY_NOT_EMPTY'
+  | 'LABEL_TAKEN'
+  | 'PHONE_TAKEN'
+  | 'INVALID_PHONE'
+  | 'SELF_LOCKOUT'
+  | 'INVALID_IMAGE'
+  | 'INVALID_MODIFIERS';
 
 /** Ошибка API персонала: стабильный код, текст переводит клиент. */
 export function staffError(status: number, code: StaffErrorCode, extra: Record<string, unknown> = {}): HttpException {

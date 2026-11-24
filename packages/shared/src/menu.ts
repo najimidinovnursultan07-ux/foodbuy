@@ -30,6 +30,7 @@ export interface DishDto {
   weightValue: number | null;
   weightUnit: WeightUnitDto | null;
   photoUrl: string | null;
+  photoThumbUrl: string | null;
   isHit: boolean;
   isSpicy: boolean;
   isHalal: boolean;
@@ -53,6 +54,8 @@ export interface PublicMenuDto {
     accentColor: string;
     defaultLocale: string;
     status: RestaurantStatusDto;
+    /** Сейчас в часы работы (вне часов заказ недоступен) */
+    isOpen: boolean;
     orderFlow: 'DIRECT_TO_KITCHEN' | 'WAITER_CONFIRM';
     serviceFeeBp: number;
   };

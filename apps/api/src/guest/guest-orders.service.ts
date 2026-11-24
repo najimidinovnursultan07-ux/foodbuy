@@ -3,6 +3,8 @@ import Redis from 'ioredis';
 import { Prisma } from '@qrmenu/db';
 import {
   bishkekDate,
+  isOpenAt,
+  type OpeningHours,
   unitPrice,
   validateSelection,
   type CreateOrderRequest,
@@ -34,6 +36,7 @@ export class GuestOrdersService {
     const r = table.restaurant;
     const restaurantId = r.id;
     if (r.status !== 'ACTIVE') throw guestError(403, 'ORDERING_DISABLED');
+    if (!isOpenAt(table.venue.openingHours as OpeningHours)) throw guestError(403, 'RESTAURANT_CLOSED');
 
     // Повторная отправка (плохая сеть) — возвращаем уже созданный заказ
     const replay = await this.findByRequestId(restaurantId, table.id, req.clientRequestId);

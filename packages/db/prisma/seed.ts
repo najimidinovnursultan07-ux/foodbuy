@@ -279,13 +279,13 @@ async function main() {
     },
   });
 
-  const week = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
   const venue = await prisma.venue.create({
     data: {
       restaurantId: rid,
       name: 'Ала-Тоо, центр',
       address: 'Бишкек, пр. Чуй, 100',
-      openingHours: Object.fromEntries(week.map((d) => [d, [['10:00', '23:00']]])),
+      // Часы не заданы — открыто всегда (настраиваются в панели: «Настройки → Часы работы»)
+      openingHours: {},
     },
   });
 

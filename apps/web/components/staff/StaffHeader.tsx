@@ -47,6 +47,7 @@ export function StaffHeader({ staff, t, locale, onLocale, sound, offline, onLogo
           <nav className={s.nav}>
             <Link href="/staff/waiter">{t.floor}</Link>
             <Link href="/staff/kitchen">{t.kitchen}</Link>
+            <Link href="/admin">{t.panel}</Link>
           </nav>
         )}
         <button type="button" className={s.toolBtn} onClick={sound.enable} aria-pressed={sound.enabled}>

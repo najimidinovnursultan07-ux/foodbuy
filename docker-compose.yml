@@ -48,6 +48,7 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/qrmenu
       REDIS_URL: redis://redis:6379
       S3_ENDPOINT: http://minio:9000
+      STORAGE_DRIVER: s3
       TZ: Asia/Bishkek
     ports: ["4000:4000"]
     depends_on:

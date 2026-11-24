@@ -208,6 +208,8 @@ model Dish {
   weightValue  Int?
   weightUnit   WeightUnit?
   photoUrl     String?
+  /// Миниатюра 176×176 для списка меню (быстро на 3G)
+  photoThumbUrl String?
   station      Station     @default(KITCHEN)
   isHit        Boolean     @default(false)
   isSpicy      Boolean     @default(false)

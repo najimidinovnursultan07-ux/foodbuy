@@ -30,8 +30,10 @@ export function DishTags({ dish, t }: { dish: DishDto; t: Messages }) {
 
 /** Фото блюда или нейтральная плашка с первой буквой. Фото — WebP, ленивое. */
 export function Thumb({ dish, name, size }: { dish: DishDto; name: string; size: number }) {
-  if (dish.photoUrl) {
-    return <img src={dish.photoUrl} alt="" width={size} height={size} loading="lazy" decoding="async" className={s.thumb} />;
+  // В списке — миниатюра 176×176 (быстро на 3G), в карточке блюда — большое фото
+  const src = size <= 176 ? (dish.photoThumbUrl ?? dish.photoUrl) : dish.photoUrl;
+  if (src) {
+    return <img src={src} alt="" width={size} height={size} loading="lazy" decoding="async" className={s.thumb} />;
   }
   return (
     <span className={s.thumbEmpty} style={{ width: size, height: size }} aria-hidden="true">

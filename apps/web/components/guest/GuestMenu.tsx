@@ -31,7 +31,9 @@ export function GuestMenu({ menu, token, initialLocale }: { menu: PublicMenuDto;
   const [busy, setBusy] = useState(false);
   const t = messages(locale);
   const slug = menu.restaurant.slug;
-  const canOrder = menu.restaurant.status === 'ACTIVE';
+  // Подписка активна — можно звать официанта; плюс часы работы — можно заказывать
+  const canCall = menu.restaurant.status === 'ACTIVE';
+  const canOrder = canCall && menu.restaurant.isOpen;
   const cart = useCart(slug, menu.table.id);
   const { bill, refresh } = useTableBill(slug, token);
 
@@ -104,8 +106,9 @@ export function GuestMenu({ menu, token, initialLocale }: { menu: PublicMenuDto;
 
       {view === 'menu' ? (
         <MenuView menu={menu} locale={locale} onOpenDish={setOpenDishId}>
-          {!canOrder && <p className={s.notice}>{t.menuOnly}</p>}
-          {canOrder && (
+          {!canCall && <p className={s.notice}>{t.menuOnly}</p>}
+          {canCall && !canOrder && <p className={s.notice}>{t.closedNow}</p>}
+          {canCall && (
             <div className={s.actions}>
               <button
                 type="button"
@@ -147,6 +150,7 @@ export function GuestMenu({ menu, token, initialLocale }: { menu: PublicMenuDto;
               bill={bill}
               locale={locale}
               canOrder={canOrder}
+              canCall={canCall}
               busy={busy}
               onAddMore={() => go('menu')}
               onRequestBill={(m) => callWaiter('BRING_BILL', m)}

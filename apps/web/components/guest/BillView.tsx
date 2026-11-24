@@ -9,12 +9,13 @@ interface Props {
   bill: GuestBillDto | null;
   locale: Locale;
   canOrder: boolean;
+  canCall: boolean;
   busy: boolean;
   onAddMore: () => void;
   onRequestBill: (method: PaymentMethodDto) => void;
 }
 
-export function BillView({ bill, locale, canOrder, busy, onAddMore, onRequestBill }: Props) {
+export function BillView({ bill, locale, canOrder, canCall, busy, onAddMore, onRequestBill }: Props) {
   const t = messages(locale);
   if (!bill) return <p className={s.empty} aria-busy="true">…</p>;
   const b = bill.bill;
@@ -79,7 +80,7 @@ export function BillView({ bill, locale, canOrder, busy, onAddMore, onRequestBil
         </div>
       </dl>
 
-      {canOrder && (
+      {canCall && (
         <section className={s.payBlock} aria-labelledby="pay-title">
           <h3 id="pay-title" className={s.groupTitle}>
             {t.requestBill}
