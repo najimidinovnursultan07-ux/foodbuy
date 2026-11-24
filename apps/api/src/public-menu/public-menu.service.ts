@@ -1,8 +1,9 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { CategoryDto, DishDto, LocalizedText, PublicMenuDto } from '@qrmenu/shared';
 import { verifyTableToken } from '@qrmenu/shared/server';
 import { PrismaService } from '../prisma/prisma.module';
 import { requireEnv } from '../config/env';
+import { guestError } from '../common/guest-error';
 
 @Injectable()
 export class PublicMenuService {
@@ -13,13 +14,13 @@ export class PublicMenuService {
   /** Стол по подписанному токену из QR. Любая ошибка — 404, чтобы не подсказывать, что не так. */
   async resolveTable(slug: string, token: string) {
     const parsed = verifyTableToken(token, this.secret);
-    if (!parsed) throw new NotFoundException('TABLE_NOT_FOUND');
+    if (!parsed) throw guestError(404, 'TABLE_NOT_FOUND');
     const table = await this.prisma.table.findFirst({
       where: { id: parsed.tableId, isActive: true, restaurant: { slug } },
       include: { restaurant: true },
     });
-    if (!table || table.tokenVersion !== parsed.version) throw new NotFoundException('TABLE_NOT_FOUND');
-    if (table.restaurant.status === 'DISABLED') throw new ForbiddenException('RESTAURANT_DISABLED');
+    if (!table || table.tokenVersion !== parsed.version) throw guestError(404, 'TABLE_NOT_FOUND');
+    if (table.restaurant.status === 'DISABLED') throw guestError(403, 'RESTAURANT_DISABLED');
     return table;
   }
 
@@ -100,6 +101,7 @@ export class PublicMenuService {
         accentColor: r.accentColor,
         defaultLocale: r.defaultLocale,
         status: r.status,
+        orderFlow: r.orderFlow,
         serviceFeeBp: r.serviceFeeBp,
       },
       table: { id: table.id, label: table.label },

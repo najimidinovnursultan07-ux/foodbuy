@@ -53,6 +53,7 @@ export interface PublicMenuDto {
     accentColor: string;
     defaultLocale: string;
     status: RestaurantStatusDto;
+    orderFlow: 'DIRECT_TO_KITCHEN' | 'WAITER_CONFIRM';
     serviceFeeBp: number;
   };
   table: { id: string; label: string };

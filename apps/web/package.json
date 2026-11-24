@@ -13,13 +13,14 @@
     "@qrmenu/shared": "workspace:*",
     "next": "15.5.29",
     "react": "19.1.10",
-    "react-dom": "19.1.10"
+    "react-dom": "19.1.10",
+    "socket.io-client": "4.8.1"
   },
   "devDependencies": {
-    "@types/react": "^19.1.0",
-    "@types/react-dom": "^19.1.0",
     "@playwright/test": "1.63.0",
     "@qrmenu/db": "workspace:*",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
     "dotenv-cli": "^8.0.0"
   }
 }

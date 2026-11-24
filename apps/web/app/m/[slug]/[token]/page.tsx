@@ -32,5 +32,5 @@ export default async function GuestMenuPage({ params }: { params: Params }) {
   if (res.kind === 'disabled') return <StatusScreen title={t.disabledTitle} text={t.disabledText} />;
   if (res.kind === 'error') return <StatusScreen title={t.errorTitle} text={t.errorText} retry={t.retry} />;
 
-  return <GuestMenu menu={res.menu} initialLocale={locale} />;
+  return <GuestMenu menu={res.menu} token={token} initialLocale={locale} />;
 }

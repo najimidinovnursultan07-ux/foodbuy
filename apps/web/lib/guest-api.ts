@@ -1,0 +1,58 @@
+'use client';
+
+import type {
+  CreateCallRequest,
+  CreateOrderRequest,
+  CreateOrderResponse,
+  GuestBillDto,
+  GuestErrorBody,
+} from '@qrmenu/shared';
+
+export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+
+export class GuestApiError extends Error {
+  constructor(public readonly body: Partial<GuestErrorBody> | null) {
+    super(body?.code ?? 'NETWORK');
+  }
+}
+
+async function call<T>(path: string, init?: RequestInit): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      ...init,
+      cache: 'no-store',
+      headers: { 'content-type': 'application/json', ...init?.headers },
+      signal: AbortSignal.timeout(15_000),
+    });
+  } catch {
+    throw new GuestApiError(null); // нет сети / таймаут
+  }
+  if (!res.ok) throw new GuestApiError(await res.json().catch(() => null));
+  return (await res.json()) as T;
+}
+
+const seg = (slug: string, token: string) => `${encodeURIComponent(slug)}/${encodeURIComponent(token)}`;
+
+export const guestApi = {
+  getBill: (slug: string, token: string) => call<GuestBillDto>(`/public/bill/${seg(slug, token)}`),
+  createOrder: (slug: string, token: string, body: CreateOrderRequest) =>
+    call<CreateOrderResponse>(`/public/orders/${seg(slug, token)}`, { method: 'POST', body: JSON.stringify(body) }),
+  createCall: (slug: string, token: string, body: CreateCallRequest) =>
+    call<{ callId: string }>(`/public/calls/${seg(slug, token)}`, { method: 'POST', body: JSON.stringify(body) }),
+};
+
+/** Анонимный id устройства — только для лимита заказов, не для слежки. */
+export function deviceId(): string {
+  const KEY = 'qrmenu:device';
+  try {
+    let id = localStorage.getItem(KEY);
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem(KEY, id);
+    }
+    return id;
+  } catch {
+    return crypto.randomUUID();
+  }
+}

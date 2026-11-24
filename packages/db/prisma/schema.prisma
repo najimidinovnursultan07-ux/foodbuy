@@ -342,6 +342,8 @@ model Order {
   comment            String?
   /// Анонимный id устройства гостя — для лимита заказов
   deviceId           String
+  /// Ключ идемпотентности от клиента: повторная отправка на плохой сети не создаёт дубль
+  clientRequestId    String?
   totalTyiyn         Int
   confirmedByStaffId String?
   createdAt          DateTime    @default(now())
@@ -357,6 +359,7 @@ model Order {
   confirmedBy Staff?      @relation("OrderConfirmedBy", fields: [confirmedByStaffId], references: [id], onDelete: SetNull)
   items       OrderItem[]
 
+  @@unique([restaurantId, clientRequestId])
   @@index([restaurantId, status, createdAt])
   @@index([restaurantId, deviceId, createdAt])
   @@index([billId])

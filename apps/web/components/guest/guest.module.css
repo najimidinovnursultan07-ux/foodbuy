@@ -147,6 +147,115 @@
   font-weight: 600;
   box-shadow: 0 6px 20px rgb(0 0 0 / 0.18);
   z-index: 3;
+  border: 0;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ───────── Действия стола, корзина, счёт ───────── */
+.actions { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 16px 8px; }
+.actions .secondary { flex: 1 1 160px; }
+
+.secondary {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+}
+.secondary:disabled { color: #44403c; background: var(--soft); cursor: default; }
+.secondary[aria-pressed='true'] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+
+.back {
+  min-height: 44px;
+  margin-top: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--fg);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.empty { color: var(--muted); text-align: center; padding: 32px 0; }
+
+.lines, .orders { list-style: none; margin: 0; padding: 0; }
+.line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.line[data-bad] { background: #fef2f2; }
+.lineText { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.lineComment { font-size: 14px; color: var(--muted); font-style: italic; }
+
+.summary { padding: 12px 0; }
+.hint { color: var(--muted); font-size: 14px; margin: 4px 0; }
+.error { color: #991b1b; background: #fef2f2; border-radius: 10px; padding: 10px 12px; margin: 8px 0; }
+.okNote { color: #14532d; background: #dcfce7; border-radius: 10px; padding: 10px 12px; margin: 8px 0; font-weight: 600; }
+
+.bottomAction {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  background: linear-gradient(rgb(255 255 255 / 0), #fff 30%);
+  z-index: 3;
+}
+
+.orderCard { border: 1px solid var(--line); border-radius: 14px; padding: 12px; margin-bottom: 10px; }
+.orderHead { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.orderItems { list-style: none; margin: 8px 0 0; padding: 0; font-size: 15px; }
+.orderItems li { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; }
+.orderItems li[data-cancelled] { text-decoration: line-through; color: var(--muted); }
+
+.badge { font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--soft); color: #292524; }
+.badge[data-status='PENDING_CONFIRMATION'] { background: #fef3c7; color: #78350f; }
+.badge[data-status='NEW'] { background: #dbeafe; color: #1e3a8a; }
+.badge[data-status='IN_PROGRESS'] { background: #ffedd5; color: #7c2d12; }
+.badge[data-status='READY'] { background: #dcfce7; color: #14532d; }
+.badge[data-status='CANCELLED'] { background: #fee2e2; color: #991b1b; }
+
+.totals { margin: 12px 0; }
+.totals div { display: flex; justify-content: space-between; padding: 4px 0; }
+.totals dt { color: var(--muted); }
+.totals dd { margin: 0; white-space: nowrap; }
+.totals .grand { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 8px; font-size: 18px; font-weight: 700; }
+.totals .grand dt { color: var(--fg); }
+
+.payBlock { margin: 16px 0; }
+.payButtons { display: flex; gap: 8px; }
+.payButtons .secondary { flex: 1; }
+
+.toast:empty { display: none; }
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(84px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - 32px);
+  text-align: center;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #1c1917;
+  color: #fff;
+  font-weight: 600;
+  z-index: 10;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.25);
 }
 
 /* ───────── Карточка блюда (bottom sheet на <dialog>) ───────── */

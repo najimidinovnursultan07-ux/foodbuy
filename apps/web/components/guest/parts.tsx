@@ -2,6 +2,9 @@ import type { DishDto } from '@qrmenu/shared';
 import type { Messages } from '@/lib/i18n';
 import s from './guest.module.css';
 
+/** 1000 б.п. → «10», 1250 → «12,5» */
+export const feePercent = (bp: number) => String(bp / 100).replace('.', ',');
+
 export function weightLabel(dish: Pick<DishDto, 'weightValue' | 'weightUnit'>, t: Messages): string | null {
   if (dish.weightValue == null || !dish.weightUnit) return null;
   return `${dish.weightValue} ${t.unit[dish.weightUnit]}`;
