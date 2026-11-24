@@ -1,0 +1,22 @@
+{
+  "name": "qrmenu",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev": "pnpm -r --parallel --filter ./apps/* dev",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "db:generate": "pnpm --filter @qrmenu/db generate",
+    "db:migrate": "pnpm --filter @qrmenu/db migrate:dev",
+    "db:deploy": "pnpm --filter @qrmenu/db migrate:deploy",
+    "db:seed": "pnpm --filter @qrmenu/db seed",
+    "db:reset": "pnpm --filter @qrmenu/db reset"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vitest": "3.2.7",
+    "@types/node": "^22.10.0"
+  }
+}

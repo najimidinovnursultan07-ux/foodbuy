@@ -1,0 +1,14 @@
+:root {
+  --accent: #c2410c;
+  --bg: #ffffff;
+  --fg: #1c1917;
+  --muted: #57534e; /* контраст к белому ≥ 4.5:1 */
+  --tap: 44px;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--fg); }
+button, a.button { min-height: var(--tap); min-width: var(--tap); }
+/* Кыргызские строки длиннее — переносим, а не обрезаем */
+h1, h2, h3, p, button, span { overflow-wrap: anywhere; hyphens: auto; }

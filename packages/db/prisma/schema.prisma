@@ -1,0 +1,444 @@
+// QR-меню: модель данных.
+// Правила: деньги — Int в тыйынах; переводимые тексты — Json { ru, ky?, en? };
+// у каждой бизнес-сущности есть restaurantId (изоляция тенантов).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────── Платформа ─────────
+
+enum RestaurantStatus {
+  ACTIVE    // всё работает
+  MENU_ONLY // подписка не оплачена: меню видно, заказы/вызовы выключены
+  DISABLED  // полностью выключен
+}
+
+enum OrderFlow {
+  DIRECT_TO_KITCHEN // заказ сразу на кухню
+  WAITER_CONFIRM    // сначала подтверждение официантом
+}
+
+model Restaurant {
+  id                   String           @id @default(cuid())
+  slug                 String           @unique
+  name                 String
+  status               RestaurantStatus @default(ACTIVE)
+  orderFlow            OrderFlow        @default(DIRECT_TO_KITCHEN)
+  /// % обслуживания в базисных пунктах: 1000 = 10%
+  serviceFeeBp         Int              @default(0)
+  logoUrl              String?
+  accentColor          String           @default("#C2410C")
+  defaultLocale        String           @default("ru")
+  timezone             String           @default("Asia/Bishkek")
+  /// Ссылка на карточку ресторана в 2GIS (для отзывов 4–5★)
+  twoGisUrl            String?
+  telegramChatId       String?
+  /// Алерт владельцу, если заказ ждёт дольше (мин.)
+  orderAlertMinutes    Int              @default(20)
+  /// Лимит заказов с одного устройства в час
+  ordersPerDeviceHour  Int              @default(10)
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  venues         Venue[]
+  staff          Staff[]
+  tables         Table[]
+  categories     Category[]
+  dishes         Dish[]
+  modifierGroups ModifierGroup[]
+  modifiers      Modifier[]
+  upsells        Upsell[]
+  bills          TableBill[]
+  orders         Order[]
+  orderItems     OrderItem[]
+  waiterCalls    WaiterCall[]
+  reviews        Review[]
+  subscriptions  Subscription[]
+}
+
+model Plan {
+  id            String         @id @default(cuid())
+  code          String         @unique
+  name          String
+  /// Цена в месяц, тыйыны
+  priceTyiyn    Int
+  maxTables     Int?
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  subscriptions Subscription[]
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+}
+
+/// Статус ставится вручную супер-админом (онлайн-оплаты нет).
+model Subscription {
+  id           String             @id @default(cuid())
+  restaurantId String
+  planId       String
+  status       SubscriptionStatus @default(TRIAL)
+  periodStart  DateTime
+  periodEnd    DateTime
+  note         String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  plan       Plan       @relation(fields: [planId], references: [id])
+
+  @@index([restaurantId, periodEnd])
+}
+
+// ───────── Ресторан ─────────
+
+model Venue {
+  id           String   @id @default(cuid())
+  restaurantId String
+  name         String
+  address      String?
+  /// Часы работы: { mon: [["10:00","23:00"]], ... }, время Asia/Bishkek
+  openingHours Json     @default("{}")
+  createdAt    DateTime @default(now())
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  tables     Table[]
+  staff      Staff[]
+
+  @@index([restaurantId])
+}
+
+enum StaffRole {
+  waiter
+  kitchen
+  manager
+}
+
+enum Station {
+  KITCHEN
+  BAR
+}
+
+model Staff {
+  id           String    @id @default(cuid())
+  restaurantId String
+  venueId      String?
+  name         String
+  /// +996XXXXXXXXX
+  phone        String
+  pinHash      String
+  role         StaffRole
+  /// Для роли kitchen: какой цех видит на KDS (null — все)
+  station      Station?
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  restaurant     Restaurant   @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  venue          Venue?       @relation(fields: [venueId], references: [id], onDelete: SetNull)
+  confirmedOrders Order[]     @relation("OrderConfirmedBy")
+  closedBills    TableBill[]  @relation("BillClosedBy")
+  handledCalls   WaiterCall[] @relation("CallHandledBy")
+
+  @@unique([restaurantId, phone])
+  @@index([phone])
+}
+
+model Table {
+  id           String   @id @default(cuid())
+  restaurantId String
+  venueId      String
+  /// Как подписан стол для людей: «5», «Терраса 2»
+  label        String
+  sortOrder    Int      @default(0)
+  /// Версия подписи QR; при перевыпуске +1 — старые наклейки перестают работать
+  tokenVersion Int      @default(1)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  restaurant  Restaurant   @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  venue       Venue        @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  bills       TableBill[]
+  orders      Order[]
+  waiterCalls WaiterCall[]
+
+  @@unique([venueId, label])
+  @@index([restaurantId])
+}
+
+// ───────── Меню ─────────
+
+model Category {
+  id           String   @id @default(cuid())
+  restaurantId String
+  name         Json
+  sortOrder    Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  dishes     Dish[]
+
+  @@index([restaurantId, sortOrder])
+}
+
+enum WeightUnit {
+  G
+  ML
+  PCS
+}
+
+model Dish {
+  id           String      @id @default(cuid())
+  restaurantId String
+  categoryId   String
+  name         Json
+  description  Json        @default("{}")
+  priceTyiyn   Int
+  weightValue  Int?
+  weightUnit   WeightUnit?
+  photoUrl     String?
+  station      Station     @default(KITCHEN)
+  isHit        Boolean     @default(false)
+  isSpicy      Boolean     @default(false)
+  isHalal      Boolean     @default(false)
+  /// false — в стоп-листе («нет в наличии»)
+  isAvailable  Boolean     @default(true)
+  /// false — скрыто из меню
+  isActive     Boolean     @default(true)
+  sortOrder    Int         @default(0)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  restaurant     Restaurant      @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  category       Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  modifierGroups ModifierGroup[]
+  upsellsFrom    Upsell[]        @relation("UpsellSource")
+  upsellsTo      Upsell[]        @relation("UpsellTarget")
+  orderItems     OrderItem[]
+
+  @@index([restaurantId, categoryId, sortOrder])
+}
+
+model ModifierGroup {
+  id           String   @id @default(cuid())
+  restaurantId String
+  dishId       String
+  name         Json
+  /// 0 — необязательная группа; 1 и maxSelect 1 — выбор одного варианта
+  minSelect    Int      @default(0)
+  maxSelect    Int      @default(1)
+  sortOrder    Int      @default(0)
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  dish       Dish       @relation(fields: [dishId], references: [id], onDelete: Cascade)
+  modifiers  Modifier[]
+
+  @@index([dishId])
+}
+
+model Modifier {
+  id              String  @id @default(cuid())
+  restaurantId    String
+  groupId         String
+  name            Json
+  priceDeltaTyiyn Int     @default(0)
+  isDefault       Boolean @default(false)
+  isAvailable     Boolean @default(true)
+  sortOrder       Int     @default(0)
+
+  restaurant Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  group      ModifierGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+}
+
+/// «К этому берут»: связка блюдо → предлагаемое блюдо (задаёт ресторан)
+model Upsell {
+  id              String @id @default(cuid())
+  restaurantId    String
+  dishId          String
+  suggestedDishId String
+  sortOrder       Int    @default(0)
+
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  dish          Dish       @relation("UpsellSource", fields: [dishId], references: [id], onDelete: Cascade)
+  suggestedDish Dish       @relation("UpsellTarget", fields: [suggestedDishId], references: [id], onDelete: Cascade)
+
+  @@unique([dishId, suggestedDishId])
+  @@index([restaurantId])
+}
+
+// ───────── Зал: счёт, заказы, вызовы ─────────
+
+enum BillStatus {
+  OPEN
+  CLOSED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+}
+
+/// Счёт стола. На столе одновременно не больше одного OPEN-счёта
+/// (частичный уникальный индекс в миграции).
+model TableBill {
+  id               String         @id @default(cuid())
+  restaurantId     String
+  tableId          String
+  status           BillStatus     @default(OPEN)
+  /// Способ оплаты, который гость выбрал при «принести счёт»
+  requestedPayment PaymentMethod?
+  billRequestedAt  DateTime?
+  /// Фактический способ оплаты, отмечает официант
+  paidWith         PaymentMethod?
+  subtotalTyiyn    Int            @default(0)
+  serviceFeeTyiyn  Int            @default(0)
+  totalTyiyn       Int            @default(0)
+  openedAt         DateTime       @default(now())
+  closedAt         DateTime?
+  closedByStaffId  String?
+
+  restaurant  Restaurant   @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  table       Table        @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  closedBy    Staff?       @relation("BillClosedBy", fields: [closedByStaffId], references: [id], onDelete: SetNull)
+  orders      Order[]
+  waiterCalls WaiterCall[]
+  review      Review?
+
+  @@index([restaurantId, status])
+  @@index([restaurantId, closedAt])
+  @@index([tableId, status])
+}
+
+enum OrderStatus {
+  PENDING_CONFIRMATION // ждёт подтверждения официанта
+  NEW                  // на кухне, не начат
+  IN_PROGRESS          // готовится
+  READY                // готово — забрать
+  SERVED               // отдано гостю
+  CANCELLED
+}
+
+model Order {
+  id                 String      @id @default(cuid())
+  restaurantId       String
+  billId             String
+  tableId            String
+  /// Номер заказа за день в ресторане (для кухни)
+  number             Int
+  status             OrderStatus
+  comment            String?
+  /// Анонимный id устройства гостя — для лимита заказов
+  deviceId           String
+  totalTyiyn         Int
+  confirmedByStaffId String?
+  createdAt          DateTime    @default(now())
+  confirmedAt        DateTime?
+  startedAt          DateTime?
+  readyAt            DateTime?
+  servedAt           DateTime?
+  cancelledAt        DateTime?
+
+  restaurant  Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  bill        TableBill   @relation(fields: [billId], references: [id], onDelete: Cascade)
+  table       Table       @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  confirmedBy Staff?      @relation("OrderConfirmedBy", fields: [confirmedByStaffId], references: [id], onDelete: SetNull)
+  items       OrderItem[]
+
+  @@index([restaurantId, status, createdAt])
+  @@index([restaurantId, deviceId, createdAt])
+  @@index([billId])
+}
+
+enum OrderItemStatus {
+  NEW
+  IN_PROGRESS
+  READY
+  SERVED
+  CANCELLED
+}
+
+model OrderItem {
+  id             String          @id @default(cuid())
+  restaurantId   String
+  orderId        String
+  dishId         String?
+  /// Снимок названия на момент заказа
+  nameSnapshot   Json
+  /// Снимок выбранных модификаторов: [{ id, name, priceDeltaTyiyn }]
+  modifiers      Json            @default("[]")
+  /// Цена за 1 шт. с модификаторами
+  unitPriceTyiyn Int
+  quantity       Int
+  comment        String?
+  station        Station
+  status         OrderItemStatus @default(NEW)
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  order      Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  dish       Dish?      @relation(fields: [dishId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([restaurantId, station, status])
+  @@index([dishId])
+}
+
+enum WaiterCallType {
+  CALL_WAITER
+  BRING_BILL
+}
+
+enum WaiterCallStatus {
+  OPEN
+  ACKNOWLEDGED
+  DONE
+}
+
+model WaiterCall {
+  id                String           @id @default(cuid())
+  restaurantId      String
+  tableId           String
+  billId            String?
+  type              WaiterCallType
+  paymentMethod     PaymentMethod?
+  status            WaiterCallStatus @default(OPEN)
+  handledByStaffId  String?
+  createdAt         DateTime         @default(now())
+  acknowledgedAt    DateTime?
+  doneAt            DateTime?
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  table      Table      @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  bill       TableBill? @relation(fields: [billId], references: [id], onDelete: SetNull)
+  handledBy  Staff?     @relation("CallHandledBy", fields: [handledByStaffId], references: [id], onDelete: SetNull)
+
+  @@index([restaurantId, status, createdAt])
+}
+
+/// Отзыв после закрытия счёта: 4–5★ → 2GIS, 1–3★ → только владельцу
+model Review {
+  id           String   @id @default(cuid())
+  restaurantId String
+  billId       String   @unique
+  rating       Int
+  comment      String?
+  sentTo2gis   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  bill       TableBill  @relation(fields: [billId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId, createdAt])
+}
