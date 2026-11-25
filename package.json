@@ -2,10 +2,13 @@
   "name": "qrmenu",
   "private": true,
   "packageManager": "pnpm@10.28.0",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
+    "postinstall": "pnpm --filter @qrmenu/shared --filter @qrmenu/db build",
     "build": "pnpm -r build",
-    "dev": "pnpm -r --parallel --filter ./apps/* dev",
+    "dev": "pnpm --parallel --filter @qrmenu/api --filter @qrmenu/web dev",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "db:generate": "pnpm --filter @qrmenu/db generate",
