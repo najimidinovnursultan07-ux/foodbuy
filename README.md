@@ -52,3 +52,20 @@ pnpm build && pnpm --filter @qrmenu/web test:e2e   # путь гостя (Playwr
 и зарегистрируйте `https://<api>/telegram/webhook` через `setWebhook` с этим `secret_token`.
 Отправка идёт через очередь BullMQ (Redis) с повторами.
 
+## Деплой (продакшен)
+- **API + Redis — Render**, описаны в `render.yaml` (Blueprint, автодеплой из `main`).
+  API: https://foodbuy-api-b3hj.onrender.com (проверка: `/health`). Один процесс: HTTP, Socket.IO,
+  очередь уведомлений, расписание и Telegram. При старте `apps/api/start.sh` применяет миграции
+  и (при `SEED_DEMO=true`) один раз создаёт демо-ресторан.
+- **База** — схема `foodbuy` в Postgres `autokg` на Render (`DATABASE_SCHEMA=foodbuy`).
+  ⚠️ Бесплатная база Render удаляется через 30 дней (у `autokg` — 18.12.2026). До этого перенесите
+  данные в платную базу и поменяйте `DATABASE_URL`.
+- **Сайт — Vercel** (`vercel.json`, сервис `web`). Адрес API для браузера — в `apps/web/.env.production`.
+- **Секреты** не хранятся в репозитории: `QR_SIGNING_SECRET` и `JWT_SECRET` сгенерировал Render,
+  PIN демо-сотрудников и супер-админки в продакшене — из `SEED_PIN` (PIN из этого README там не работают).
+- Переменные API на Render, которые стоит добавить: `PUBLIC_WEB_URL` (адрес сайта — для ссылок в QR),
+  `WEB_ORIGIN` (тот же адрес — ограничить CORS), `TELEGRAM_BOT_TOKEN` и `TELEGRAM_BOT_USERNAME`.
+- Бесплатный тариф: сервер засыпает после 15 минут без запросов (первое открытие ~1 минута),
+  во сне не работают расписание и Telegram; диск не сохраняется — для фото блюд нужен S3
+  (`STORAGE_DRIVER=s3` и `S3_*`).
+
