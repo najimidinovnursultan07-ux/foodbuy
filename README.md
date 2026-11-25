@@ -14,8 +14,7 @@ packages/shared  Общий код: деньги (тыйыны → «1 250 со�
 ```bash
 cp .env.example .env
 docker compose up -d          # postgres, redis, minio
-pnpm install
-pnpm --filter @qrmenu/shared build
+pnpm install                  # заодно собирает общие пакеты и Prisma-клиент
 pnpm db:deploy && pnpm db:seed
 pnpm dev                      # api :4000, web :3000
 pnpm test                     # unit + интеграционные (Vitest)
