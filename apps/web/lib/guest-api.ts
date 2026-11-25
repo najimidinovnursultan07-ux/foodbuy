@@ -36,7 +36,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
       ...init,
       cache: 'no-store',
       headers: { 'content-type': 'application/json', ...init?.headers },
-      signal: AbortSignal.timeout(15_000),
+      signal: AbortSignal.timeout(60_000), // с запасом на пробуждение сервера API
     });
   } catch {
     throw new GuestApiError(null); // нет сети / таймаут

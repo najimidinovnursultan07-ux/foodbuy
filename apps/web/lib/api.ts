@@ -22,7 +22,8 @@ export const fetchMenu = cache(async function fetchMenu(slug: string, token: str
   try {
     const res = await fetch(`${serverApi()}/public/menu/${encodeURIComponent(slug)}/${encodeURIComponent(token)}`, {
       cache: 'no-store',
-      signal: AbortSignal.timeout(5000),
+      // Бесплатный сервер API засыпает и просыпается до минуты — ждём, а не показываем ошибку
+      signal: AbortSignal.timeout(60_000),
     });
     if (res.status === 404) return { kind: 'not_found' };
     if (res.status === 403) return { kind: 'disabled' };
