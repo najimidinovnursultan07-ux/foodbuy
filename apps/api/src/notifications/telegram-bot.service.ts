@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.module';
 import { REDIS } from '../redis/redis.module';
 import { TelegramClient, type TgUpdate } from './telegram.client';
 import { botMessages } from './bot-i18n';
+import { runsBackgroundWork } from '../config/role';
 
 const LINK_TTL_SEC = 15 * 60;
 // Префикс как у очереди: отдельные окружения (и тесты) не мешают друг другу
@@ -33,7 +34,7 @@ export class TelegramBotService implements OnModuleInit, OnModuleDestroy {
 
   onModuleInit() {
     const webhook = Boolean(process.env.TELEGRAM_WEBHOOK_SECRET);
-    if (this.telegram.enabled && !webhook && process.env.TELEGRAM_POLLING !== 'off') {
+    if (this.telegram.enabled && !webhook && runsBackgroundWork() && process.env.TELEGRAM_POLLING !== 'off') {
       this.polling = this.pollLoop();
     }
   }

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { GuestBillDto } from '@qrmenu/shared';
-import { API_URL, guestApi } from './guest-api';
+import { guestApi, socketTarget } from './guest-api';
 
 /**
  * Счёт стола в реальном времени.
@@ -44,7 +44,7 @@ export function useTableBill(slug: string, token: string) {
 
     void import('socket.io-client').then(({ io }) => {
       if (closed) return;
-      const s = io(API_URL, { transports: ['websocket', 'polling'] });
+      const s = io(socketTarget().url, socketTarget().options);
       s.on('connect', () => {
         s.emit('guest:join', { slug, token });
         void refresh(); // после переподключения могли что-то пропустить

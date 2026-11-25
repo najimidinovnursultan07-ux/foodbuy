@@ -1,8 +1,15 @@
 import { cache } from 'react';
 import type { PublicMenuDto } from '@qrmenu/shared';
 
-/** Адрес API для серверного рендера (внутри Docker — имя сервиса). */
-const SERVER_API = process.env.API_INTERNAL_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+/**
+ * Адрес API для серверного рендера:
+ *  - на Vercel — API_URL из привязки сервиса web → api (внутренний адрес, без публичного /api);
+ *  - в docker compose — API_INTERNAL_URL (имя контейнера);
+ *  - локально — NEXT_PUBLIC_API_URL.
+ * Читается при каждом запросе: привязки доступны только во время работы функции, не при сборке.
+ */
+const serverApi = () =>
+  (process.env.API_URL ?? process.env.API_INTERNAL_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000').replace(/\/$/, '');
 
 export type MenuResult =
   | { kind: 'ok'; menu: PublicMenuDto }
@@ -13,7 +20,7 @@ export type MenuResult =
 /** Один запрос к API на рендер: метаданные и страница берут результат из React cache. */
 export const fetchMenu = cache(async function fetchMenu(slug: string, token: string): Promise<MenuResult> {
   try {
-    const res = await fetch(`${SERVER_API}/public/menu/${encodeURIComponent(slug)}/${encodeURIComponent(token)}`, {
+    const res = await fetch(`${serverApi()}/public/menu/${encodeURIComponent(slug)}/${encodeURIComponent(token)}`, {
       cache: 'no-store',
       signal: AbortSignal.timeout(5000),
     });

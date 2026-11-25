@@ -7,6 +7,7 @@ import { PrismaService } from '../prisma/prisma.module';
 import { REDIS } from '../redis/redis.module';
 import { AdminReportsService } from '../admin/admin-reports.service';
 import { TelegramClient, TelegramError } from './telegram.client';
+import { runsBackgroundWork } from '../config/role';
 import { botMessages, type BotMessages } from './bot-i18n';
 
 type SendJob = { chatId: string; text: string };
@@ -48,7 +49,10 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleInit() {
+    // Очередь нужна всем: API кладёт в неё сообщения
     this.queue = new Queue('notifications', { connection: this.connection(), prefix: this.prefix });
+    // Обработчик и расписание — только там, где процесс живёт постоянно (worker или локально all)
+    if (!runsBackgroundWork()) return;
     this.worker = new Worker('notifications', (job) => this.process(job), {
       connection: this.connection(),
       prefix: this.prefix,

@@ -1,0 +1,12 @@
+# Фоновый обработчик (Vercel Daemon «worker» или отдельный контейнер):
+# очередь уведомлений BullMQ, расписание (опоздавшие заказы, вечерний отчёт), опрос Telegram.
+# HTTP не слушает. Контекст сборки — корень монорепозитория.
+FROM node:22-alpine
+RUN corepack enable
+WORKDIR /repo
+COPY . .
+# postinstall собирает @qrmenu/shared и @qrmenu/db (Prisma-клиент под musl)
+RUN pnpm install --frozen-lockfile && pnpm --filter @qrmenu/api build
+WORKDIR /repo/apps/api
+ENV NODE_ENV=production APP_ROLE=worker
+CMD ["node", "dist/worker.js"]

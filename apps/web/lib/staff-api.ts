@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { LOCALES, type Locale, type StaffLoginResponse, type StaffProfileDto } from '@qrmenu/shared';
-import { API_URL } from './guest-api';
+import { API_URL, socketTarget } from './guest-api';
 
 const SESSION_KEY = 'qrmenu:staff';
 const LANG_KEY = 'qrmenu:staff-lang';
@@ -136,7 +136,7 @@ export function useStaffLive<T>(path: string) {
     let socket: { close(): void } | undefined;
     void import('socket.io-client').then(({ io }) => {
       if (closed) return;
-      const sock = io(API_URL, { transports: ['websocket', 'polling'] });
+      const sock = io(socketTarget().url, socketTarget().options);
       sock.on('connect', () => {
         sock.emit('staff:join', { token: s.token });
         void refresh();

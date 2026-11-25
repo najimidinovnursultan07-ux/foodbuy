@@ -11,7 +11,17 @@ import type {
   ReviewStatusDto,
 } from '@qrmenu/shared';
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+/** Публичный адрес API для браузера: локально — http://localhost:4000, на Vercel — относительный /api. */
+export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000').replace(/\/$/, '');
+
+/**
+ * Подключение Socket.IO к API: origin и путь берутся из API_URL, так что /api на Vercel
+ * превращается в /api/socket.io. Только WebSocket: на Vercel Functions long-polling не работает.
+ */
+export function socketTarget(): { url: string; options: { path: string; transports: ['websocket'] } } {
+  const base = new URL(API_URL, window.location.href);
+  return { url: base.origin, options: { path: `${base.pathname.replace(/\/$/, '')}/socket.io`, transports: ['websocket'] } };
+}
 
 export class GuestApiError extends Error {
   constructor(public readonly body: Partial<GuestErrorBody> | null) {
