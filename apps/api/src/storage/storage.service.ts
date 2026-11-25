@@ -28,7 +28,9 @@ export class StorageService {
       });
       this.publicBase = (process.env.S3_PUBLIC_URL ?? '').replace(/\/$/, '');
     } else {
-      this.publicBase = `${(process.env.API_PUBLIC_URL ?? 'http://localhost:4000').replace(/\/$/, '')}/uploads`;
+      // RENDER_EXTERNAL_URL Render задаёт сам — публичный адрес сервиса
+      const api = process.env.API_PUBLIC_URL ?? process.env.RENDER_EXTERNAL_URL ?? 'http://localhost:4000';
+      this.publicBase = `${api.replace(/\/$/, '')}/uploads`;
     }
   }
 

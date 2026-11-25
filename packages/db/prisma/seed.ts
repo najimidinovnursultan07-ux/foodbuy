@@ -247,7 +247,22 @@ const UPSELLS: [string, string[]][] = [
   ['shorpo', ['bread', 'samsa']],
 ];
 
+/**
+ * PIN демо-сотрудников и супер-админа. В разработке — известные (см. README),
+ * в продакшене — только из секретной переменной SEED_PIN: репозиторий публичный.
+ */
+const prodPin = process.env.SEED_PIN;
+if (process.env.NODE_ENV === 'production' && !/^\d{4,6}$/.test(prodPin ?? '')) {
+  throw new Error('В продакшене задайте SEED_PIN (4–6 цифр) — PIN из README публичны');
+}
+const pin = (dev: string) => prodPin ?? dev;
+
 async function main() {
+  // Режим «только если пусто» — для автозапуска при деплое: существующий демо-ресторан не трогаем
+  if (process.env.SEED_ONLY_IF_EMPTY && (await prisma.restaurant.count({ where: { slug: DEMO_SLUG } }))) {
+    console.log('Демо-ресторан уже есть — сиды пропущены');
+    return;
+  }
   await prisma.restaurant.deleteMany({ where: { slug: DEMO_SLUG } });
 
   const plan = await prisma.plan.upsert({
@@ -300,10 +315,10 @@ async function main() {
   });
 
   const staff: [string, string, string, 'manager' | 'waiter' | 'kitchen', Station | null][] = [
-    ['Айгуль (менеджер)', '+996700000001', '1234', 'manager', null],
-    ['Бакыт (официант)', '+996700000002', '1111', 'waiter', null],
-    ['Нурлан (кухня)', '+996700000003', '2222', 'kitchen', Station.KITCHEN],
-    ['Эльмира (бар)', '+996700000004', '3333', 'kitchen', Station.BAR],
+    ['Айгуль (менеджер)', '+996700000001', pin('1234'), 'manager', null],
+    ['Бакыт (официант)', '+996700000002', pin('1111'), 'waiter', null],
+    ['Нурлан (кухня)', '+996700000003', pin('2222'), 'kitchen', Station.KITCHEN],
+    ['Эльмира (бар)', '+996700000004', pin('3333'), 'kitchen', Station.BAR],
   ];
   await prisma.staff.createMany({
     data: staff.map(([name, phone, pin, role, station]) => ({
@@ -377,12 +392,12 @@ async function main() {
   await prisma.platformAdmin.upsert({
     where: { phone: '+996700000099' },
     update: {},
-    create: { name: 'Админ платформы', phone: '+996700000099', pinHash: hashPin('999999') },
+    create: { name: 'Админ платформы', phone: '+996700000099', pinHash: hashPin(pin('999999')) },
   });
-  console.log('Супер-админка: /platform, +996700000099 / 999999');
+  console.log(`Супер-админка: /platform, +996700000099${prodPin ? ' (PIN из SEED_PIN)' : ' / 999999'}`);
 
   const secret = process.env.QR_SIGNING_SECRET ?? 'dev-qr-secret-change-me';
-  const origin = process.env.WEB_ORIGIN?.split(',')[0] ?? 'http://localhost:3000';
+  const origin = process.env.PUBLIC_WEB_URL ?? process.env.WEB_ORIGIN?.split(',')[0] ?? 'http://localhost:3000';
   const tables = await prisma.table.findMany({ where: { restaurantId: rid }, orderBy: { sortOrder: 'asc' }, take: 3 });
   console.log('Ссылки столов (первые 3):');
   for (const tb of tables) {

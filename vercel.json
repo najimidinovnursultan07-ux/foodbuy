@@ -3,29 +3,10 @@
   "services": {
     "web": {
       "root": "apps/web",
-      "framework": "nextjs",
-      "bindings": [
-        { "type": "service", "service": "api", "format": "url", "env": "API_URL" }
-      ]
-    },
-    "api": {
-      "root": "apps/api",
-      "framework": "nestjs",
-      "rewrites": [
-        { "source": "/api/:path(.*)?", "destination": "/:path" }
-      ]
-    }
-  },
-  "daemons": {
-    "worker": {
-      "root": ".",
-      "entrypoint": "Dockerfile.worker",
-      "instances": { "fra1": 1 },
-      "terminationGracePeriodSeconds": 60
+      "framework": "nextjs"
     }
   },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": { "service": "api" } },
     { "source": "/(.*)", "destination": { "service": "web" } }
   ]
 }

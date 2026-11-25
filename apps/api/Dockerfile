@@ -1,14 +1,10 @@
-FROM node:22-alpine AS build
-RUN corepack enable
-WORKDIR /repo
-COPY . .
-RUN pnpm install --frozen-lockfile && pnpm --filter @qrmenu/api... build
-
 FROM node:22-alpine
 RUN corepack enable
 WORKDIR /repo
-COPY --from=build /repo /repo
-WORKDIR /repo/apps/api
+COPY . .
+# postinstall собирает @qrmenu/shared и @qrmenu/db (Prisma-клиент под Alpine/musl)
+RUN pnpm install --frozen-lockfile && pnpm --filter @qrmenu/api build
+ENV NODE_ENV=production
 EXPOSE 4000
-# Миграции применяются при старте контейнера
-CMD ["sh", "-c", "cd /repo/packages/db && npx prisma migrate deploy && cd /repo/apps/api && node dist/main.js"]
+# Миграции (и демо-данные при SEED_DEMO=true) применяются при старте контейнера
+CMD ["sh", "/repo/apps/api/start.sh"]

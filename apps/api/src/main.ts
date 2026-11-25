@@ -5,7 +5,8 @@ import { configureApp } from './app.setup';
 
 async function bootstrap() {
   const app = configureApp(await NestFactory.create(AppModule));
-  const port = Number(process.env.API_PORT ?? 4000);
+  // Render и другие хостинги передают порт в PORT
+  const port = Number(process.env.PORT ?? process.env.API_PORT ?? 4000);
   await app.listen(port);
   console.log(`API: http://localhost:${port}`);
 }
