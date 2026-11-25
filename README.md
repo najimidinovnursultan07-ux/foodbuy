@@ -60,7 +60,8 @@ pnpm build && pnpm --filter @qrmenu/web test:e2e   # путь гостя (Playwr
 - **База** — схема `foodbuy` в Postgres `autokg` на Render (`DATABASE_SCHEMA=foodbuy`).
   ⚠️ Бесплатная база Render удаляется через 30 дней (у `autokg` — 18.12.2026). До этого перенесите
   данные в платную базу и поменяйте `DATABASE_URL`.
-- **Сайт — Vercel** (`vercel.json`, сервис `web`). Адрес API для браузера — в `apps/web/.env.production`.
+- **Сайт — Vercel**: проект `foodbuy-jsea` (https://foodbuy-jsea.vercel.app), фреймворк Next.js, корневая папка `apps/web`.
+  Адрес API для браузера — в `apps/web/.env.production`.
 - **Секреты** не хранятся в репозитории: `QR_SIGNING_SECRET` и `JWT_SECRET` сгенерировал Render,
   PIN демо-сотрудников и супер-админки в продакшене — из `SEED_PIN` (PIN из этого README там не работают).
 - Переменные API на Render, которые стоит добавить: `PUBLIC_WEB_URL` (адрес сайта — для ссылок в QR),
